@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Document.InvoiceNumber}}</title>
+  <style>{{.CSS}}</style>
+</head>
+<body>
+  <main class="page">
+    <header class="invoice-header section avoid-break">
+      <div>
+        <div class="eyebrow">Krajowy System e-Faktur</div>
+        <h1>{{.Document.InvoiceNumber}}</h1>
+        <div class="subheading">{{.Document.InvoiceType}}</div>
+      </div>
+      <div class="header-meta">
+        {{if .Document.SubjectLabel}}
+        <div class="badge">{{.Document.SubjectLabel}}</div>
+        {{end}}
+        <div class="meta-label">Numer KSeF</div>
+        <div class="mono ksef-number">{{.Document.KSeFNumber}}</div>
+      </div>
+    </header>
+
+    {{if .Document.Summary}}
+    <section class="section avoid-break">
+      <h2>Podsumowanie</h2>
+      <div class="kv-grid">
+        {{range .Document.Summary}}
+        <div class="kv-card">
+          <div class="kv-label">{{.Label}}</div>
+          <div class="kv-value">{{.Value}}</div>
+        </div>
+        {{end}}
+      </div>
+    </section>
+    {{end}}
+
+    <section class="section avoid-break">
+      <div class="party-grid">
+        <section class="party-card">
+          <h2>Sprzedawca</h2>
+          <div class="party-lines">
+            {{range .Document.Seller.Lines}}
+              {{if eq . ""}}
+                <div class="party-spacer"></div>
+              {{else if or (eq . "Adres") (eq . "Dane kontaktowe")}}
+                <div class="party-heading">{{.}}</div>
+              {{else}}
+                <div class="party-line">{{.}}</div>
+              {{end}}
+            {{end}}
+          </div>
+        </section>
+        <section class="party-card">
+          <h2>Nabywca</h2>
+          <div class="party-lines">
+            {{range .Document.Buyer.Lines}}
+              {{if eq . ""}}
+                <div class="party-spacer"></div>
+              {{else if or (eq . "Adres") (eq . "Dane kontaktowe")}}
+                <div class="party-heading">{{.}}</div>
+              {{else}}
+                <div class="party-line">{{.}}</div>
+              {{end}}
+            {{end}}
+          </div>
+        </section>
+      </div>
+    </section>
+
+    {{if .Document.Details}}
+    <section class="section avoid-break">
+      <h2>Szczegóły</h2>
+      <div class="kv-grid">
+        {{range .Document.Details}}
+        <div class="kv-card">
+          <div class="kv-label">{{.Label}}</div>
+          <div class="kv-value">{{.Value}}</div>
+        </div>
+        {{end}}
+      </div>
+    </section>
+    {{end}}
+
+    {{if .Document.Positions}}
+    <section class="section">
+      <h2>Pozycje</h2>
+      <div class="table-caption">Faktura wystawiona w walucie {{.Document.Currency}}</div>
+      <table class="invoice-table positions-table">
+        <colgroup>
+          <col class="col-lp">
+          <col class="col-name">
+          <col class="col-unit-net">
+          <col class="col-qty">
+          <col class="col-unit">
+          <col class="col-tax-rate">
+          <col class="col-net-value">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Lp.</th>
+            <th>Nazwa towaru lub usługi</th>
+            <th>Cena jedn. netto</th>
+            <th>Ilość</th>
+            <th>Miara</th>
+            <th>Stawka podatku</th>
+            <th>Wartość sprzedaży netto</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Document.Positions}}
+          <tr>
+            <td class="align-center">{{.LP}}</td>
+            <td>{{.Name}}</td>
+            <td class="align-right">{{.UnitNet}}</td>
+            <td class="align-right">{{.Qty}}</td>
+            <td class="align-center">{{.Unit}}</td>
+            <td class="align-center">{{.TaxRate}}</td>
+            <td class="align-right">{{.NetValue}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      {{if .Document.TotalGross}}
+      <div class="total-row">Kwota należności ogółem: <strong>{{.Document.TotalGross}}</strong></div>
+      {{end}}
+    </section>
+    {{end}}
+
+    {{if .Document.TaxSummary}}
+    <section class="section avoid-break">
+      <h2>Podsumowanie stawek podatku</h2>
+      <table class="invoice-table tax-summary-table">
+        <colgroup>
+          <col class="col-tax-label">
+          <col class="col-tax-value">
+          <col class="col-tax-value">
+          <col class="col-tax-value">
+          <col class="col-tax-value">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Stawka podatku</th>
+            <th>Kwota netto</th>
+            <th>Kwota podatku</th>
+            <th>Kwota brutto</th>
+            <th>Kwota podatku PLN</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Document.TaxSummary}}
+          <tr>
+            <td>{{.TaxRate}}</td>
+            <td class="align-right">{{.Net}}</td>
+            <td class="align-right">{{.Tax}}</td>
+            <td class="align-right">{{.Gross}}</td>
+            <td class="align-right">{{.TaxPLN}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </section>
+    {{end}}
+
+    {{if .Document.Payment}}
+    <section class="section avoid-break">
+      <h2>Płatność</h2>
+      <div class="kv-grid">
+        {{range .Document.Payment}}
+        <div class="kv-card">
+          <div class="kv-label">{{.Label}}</div>
+          <div class="kv-value">{{.Value}}</div>
+        </div>
+        {{end}}
+      </div>
+    </section>
+    {{end}}
+
+    {{if .Document.Registers}}
+    <section class="section avoid-break">
+      <h2>Rejestry</h2>
+      <div class="kv-grid">
+        {{range .Document.Registers}}
+        <div class="kv-card">
+          <div class="kv-label">{{.Label}}</div>
+          <div class="kv-value">{{.Value}}</div>
+        </div>
+        {{end}}
+      </div>
+    </section>
+    {{end}}
+
+    {{if .Document.Footer}}
+    <section class="section avoid-break">
+      <h2>Stopka faktury</h2>
+      <div class="stack-list">
+        {{range .Document.Footer}}
+        <div class="stack-card">{{.}}</div>
+        {{end}}
+      </div>
+    </section>
+    {{end}}
+
+    {{if .Document.Others}}
+    <section class="section">
+      <h2>Pozostałe informacje</h2>
+      <div class="kv-grid">
+        {{range .Document.Others}}
+        <div class="kv-card">
+          <div class="kv-label">{{.Label}}</div>
+          <div class="kv-value">{{.Value}}</div>
+        </div>
+        {{end}}
+      </div>
+    </section>
+    {{end}}
+  </main>
+</body>
+</html>
