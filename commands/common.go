@@ -372,11 +372,15 @@ func printInvoices(invoices []ksef.InvoiceMetadata, format string) error {
 		return nil
 	case "csv":
 		writer := csv.NewWriter(os.Stdout)
-		if err := writer.Write([]string{"ksef_number", "seller", "invoice_number", "issue_date", "gross", "currency"}); err != nil {
+		if err := writer.Write([]string{"ksef_number", "seller", "buyer", "invoice_number", "issue_date", "gross", "currency"}); err != nil {
 			return err
 		}
 		for _, invoice := range invoices {
-			if err := writer.Write([]string{invoice.KSeFNumber, invoice.Seller.Name, invoice.InvoiceNumber, invoice.IssueDate, fmt.Sprintf("%.2f", invoice.GrossAmount), invoice.Currency}); err != nil {
+			buyerName := invoice.Buyer.Name
+			if buyerName == "" {
+				buyerName = invoice.Buyer.Identifier.Value
+			}
+			if err := writer.Write([]string{invoice.KSeFNumber, invoice.Seller.Name, buyerName, invoice.InvoiceNumber, invoice.IssueDate, fmt.Sprintf("%.2f", invoice.GrossAmount), invoice.Currency}); err != nil {
 				return err
 			}
 		}
@@ -414,10 +418,14 @@ func printInvoicesGrouped(grouped map[string][]ksef.InvoiceMetadata, format stri
 
 func printInvoiceTable(invoices []ksef.InvoiceMetadata) error {
 	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(writer, "KSeF Number\tSeller\tInvoice #\tDate\tGross")
+	fmt.Fprintln(writer, "KSeF Number\tSeller\tBuyer\tInvoice #\tDate\tGross")
 	totals := map[string]float64{}
 	for _, invoice := range invoices {
-		fmt.Fprintf(writer, "%s\t%s\t%s\t%s\t%.2f %s\n", invoice.KSeFNumber, invoice.Seller.Name, invoice.InvoiceNumber, invoice.IssueDate, invoice.GrossAmount, invoice.Currency)
+		buyerName := invoice.Buyer.Name
+		if buyerName == "" {
+			buyerName = invoice.Buyer.Identifier.Value
+		}
+		fmt.Fprintf(writer, "%s\t%s\t%s\t%s\t%s\t%.2f %s\n", invoice.KSeFNumber, invoice.Seller.Name, buyerName, invoice.InvoiceNumber, invoice.IssueDate, invoice.GrossAmount, invoice.Currency)
 		totals[invoice.Currency] += invoice.GrossAmount
 	}
 	if err := writer.Flush(); err != nil {
